@@ -1,21 +1,145 @@
-```txt
+# Команды Claude Code — Интерактивный Транскрипт
+
+Современный интерактивный веб-сайт с транскриптом команд Claude Code для разработки.
+
+## 🎯 Особенности
+
+- ✨ **Интерактивный интерфейс** с поиском и фильтрацией
+- 📱 **Mobile-friendly** и fully responsive дизайн
+- 🔍 **SEO-оптимизирован** с meta-тегами и Open Graph
+- 🎨 **Современный UI** с Tailwind CSS и анимациями
+- ⚡ **Быстрая загрузка** на Cloudflare Pages Edge Network
+- 🌐 **Русский язык** для максимального удобства
+
+## 📚 Команды
+
+Сайт содержит подробную документацию по следующим командам:
+
+### Развёртывание
+- **`/deploy`** — Deploy to VPS via SSH and Docker Compose
+
+### Разработка
+- **`/feature`** — Full feature lifecycle from idea to reviewed implementation
+
+### Знания
+- **`/myinsights`** — Capture and manage development insights
+
+### Планирование
+- **`/plan`** — Plan feature implementation from SPARC documentation
+
+### Bootstrap
+- **`/start`** — Bootstrap entire project from documentation
+
+### Тестирование
+- **`/test`** — Generate and run tests from BDD scenarios
+
+## 🚀 URLs
+
+- **Production**: https://claude-commands-docs.pages.dev (будет доступен после деплоя)
+- **GitHub**: https://github.com/dzhechko/2026-jan-pu-opus-clone-01
+
+## 🛠 Технологический стек
+
+- **Backend**: Hono Framework
+- **Frontend**: Vanilla JavaScript + Tailwind CSS
+- **Hosting**: Cloudflare Pages
+- **Icons**: Font Awesome
+- **Fonts**: Inter + Fira Code
+
+## 💻 Локальная разработка
+
+### Требования
+- Node.js 20+
+- npm или pnpm
+
+### Установка и запуск
+
+```bash
+# Установить зависимости
 npm install
-npm run dev
+
+# Сборка проекта
+npm run build
+
+# Запустить в sandbox (для разработки)
+npm run dev:sandbox
+
+# Или запустить с PM2
+fuser -k 3000/tcp 2>/dev/null || true
+pm2 start ecosystem.config.cjs
+pm2 logs --nostream
+
+# Проверить
+curl http://localhost:3000
 ```
 
-```txt
-npm run deploy
+## 📦 Развёртывание на Cloudflare Pages
+
+### Через командную строку
+
+```bash
+# Сборка
+npm run build
+
+# Развёртывание
+npm run deploy:prod
 ```
 
-[For generating/synchronizing types based on your Worker configuration run](https://developers.cloudflare.com/workers/wrangler/commands/#types):
+### Через GitHub Pages
 
-```txt
-npm run cf-typegen
+Проект также можно развернуть на GitHub Pages:
+
+1. Включить GitHub Actions в репозитории
+2. Настроить GitHub Pages в Settings → Pages
+3. Выбрать branch и папку для публикации
+4. GitHub автоматически соберёт и опубликует сайт
+
+## 📁 Структура проекта
+
+```
+claude-commands-docs/
+├── src/
+│   └── index.tsx              # Главный файл Hono приложения
+├── public/
+│   └── static/
+│       ├── app.js             # JavaScript логика фронтенда
+│       ├── commands-data.json # Данные команд
+│       └── style.css          # (опционально) Дополнительные стили
+├── dist/                      # Собранные файлы (генерируется)
+├── ecosystem.config.cjs       # PM2 конфигурация
+├── wrangler.jsonc            # Cloudflare конфигурация
+├── package.json              # Зависимости и скрипты
+└── README.md                 # Этот файл
+
 ```
 
-Pass the `CloudflareBindings` as generics when instantiation `Hono`:
+## 🎨 Данные команд
 
-```ts
-// src/index.ts
-const app = new Hono<{ Bindings: CloudflareBindings }>()
-```
+Все данные команд хранятся в структурированном JSON формате в `public/static/commands-data.json`. Каждая команда содержит:
+
+- ID и название
+- Описание и аргументы
+- Категорию
+- Подробный контент с шагами, примерами, кодом
+
+## 📝 Автор
+
+**Дмитрий Жечков**
+- Telegram: [@llm_notes](https://t.me/llm_notes)
+- GitHub: [dzhechko](https://github.com/dzhechko)
+
+## 📅 Дата создания
+
+25 февраля 2026
+
+## 📄 Лицензия
+
+MIT License
+
+## 🤝 Вклад
+
+Проект создан как документация команд Claude Code. Предложения и улучшения приветствуются!
+
+---
+
+**Создано с ❤️ используя Claude Code & Hono Framework**

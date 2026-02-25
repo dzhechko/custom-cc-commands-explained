@@ -1,0 +1,481 @@
+[
+  {
+    "id": "deploy",
+    "title": "/deploy",
+    "description": "Deploy to VPS via SSH and Docker Compose",
+    "arguments": "environment (dev, staging, prod)",
+    "category": "deployment",
+    "content": {
+      "overview": "Развёртывание приложения на VPS через SSH и Docker Compose с поддержкой нескольких окружений.",
+      "environments": [
+        {
+          "name": "dev",
+          "description": "Локальный Docker Compose"
+        },
+        {
+          "name": "staging",
+          "description": "VPS staging (если существует)"
+        },
+        {
+          "name": "prod",
+          "description": "VPS production"
+        }
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "title": "Проверка тестов",
+          "command": "npm run test && npm run lint && npm run typecheck",
+          "description": "Убедиться, что все тесты проходят"
+        },
+        {
+          "step": 2,
+          "title": "Сборка",
+          "command": "docker compose -f docker-compose.prod.yml build",
+          "description": "Собрать Docker образы для production"
+        },
+        {
+          "step": 3,
+          "title": "SSH развёртывание",
+          "command": "ssh deploy@$VPS_HOST \"cd /opt/clipmaker && git pull && docker compose -f docker-compose.prod.yml up -d --build\"",
+          "description": "Подключиться к серверу и обновить контейнеры"
+        },
+        {
+          "step": 4,
+          "title": "Миграция базы данных",
+          "command": "docker compose exec web npx prisma migrate deploy",
+          "description": "Применить миграции базы данных"
+        },
+        {
+          "step": 5,
+          "title": "Проверка работоспособности",
+          "command": "curl -f https://clipmaker.ru/api/health",
+          "description": "Проверить, что приложение работает"
+        },
+        {
+          "step": 6,
+          "title": "Откат (при ошибке)",
+          "command": "git checkout HEAD~1 && docker compose up -d --build",
+          "description": "Откатиться на предыдущую версию при сбое"
+        },
+        {
+          "step": 7,
+          "title": "Тегирование",
+          "command": "git tag v$(date +%Y%m%d.%H%M) && git push --tags",
+          "description": "Создать тег релиза с timestamp"
+        }
+      ]
+    }
+  },
+  {
+    "id": "feature",
+    "title": "/feature",
+    "description": "Full feature lifecycle — from idea to reviewed implementation",
+    "arguments": "feature name or brief description",
+    "category": "development",
+    "content": {
+      "overview": "Четырёхфазный жизненный цикл разработки функциональности с проверкой качества между каждой фазой. Вся документация сохраняется в `docs/features/<feature-name>/sparc/`.",
+      "phases": [
+        {
+          "phase": 1,
+          "name": "PLAN (sparc-prd-manual)",
+          "goal": "Исследование, анализ и создание полной документации SPARC для функции",
+          "steps": [
+            "Создать директорию функции: `docs/features/<feature-name>/sparc/`",
+            "Применить sparc-prd-manual в режиме MANUAL",
+            "Передать контекст: Distributed Monolith, Docker Compose, VPS",
+            "Технологии: Next.js 15, tRPC, BullMQ, Prisma, PostgreSQL, Redis",
+            "AI: Dual provider (Cloud.ru + Global) via LLM Router",
+            "Безопасность: Client-side encrypted key storage (AES-GCM)",
+            "Создать все документы SPARC в директории функции",
+            "Git commit: `docs(<feature-name>): SPARC planning`"
+          ],
+          "checkpoint": "Показать резюме SPARC, спросить о переходе к валидации"
+        },
+        {
+          "phase": 2,
+          "name": "VALIDATE (requirements-validator, swarm)",
+          "goal": "Валидация качества документации SPARC с помощью swarm агентов проверки",
+          "validators": [
+            {
+              "name": "validator-stories",
+              "scope": "User Stories из Specification.md",
+              "target": "INVEST критерии, score ≥70"
+            },
+            {
+              "name": "validator-acceptance",
+              "scope": "Acceptance Criteria",
+              "target": "SMART критерии, testability"
+            },
+            {
+              "name": "validator-architecture",
+              "scope": "Architecture.md",
+              "target": "Консистентность с архитектурой проекта"
+            },
+            {
+              "name": "validator-pseudocode",
+              "scope": "Pseudocode.md",
+              "target": "Полнота, реализуемость"
+            },
+            {
+              "name": "validator-coherence",
+              "scope": "Все файлы SPARC",
+              "target": "Согласованность перекрёстных ссылок"
+            }
+          ],
+          "iterations": "Итеративный цикл (максимум 3 итерации) до устранения BLOCKED элементов и среднего score ≥70",
+          "checkpoint": "Показать результаты валидации, спросить о переходе к реализации"
+        },
+        {
+          "phase": 3,
+          "name": "IMPLEMENT (swarm + parallel tasks)",
+          "goal": "Реализация функции с использованием валидированной документации SPARC как источника истины",
+          "steps": [
+            "Прочитать ВСЕ документы из `docs/features/<feature-name>/sparc/`",
+            "Использовать swarm агентов: @planner, @architect, implementation agents",
+            "Разбить на задачи из Pseudocode.md",
+            "Обеспечить консистентность с Architecture.md",
+            "Параллельное выполнение независимых модулей через Task tool",
+            "Делать реализацию модульной для переиспользования",
+            "Частые коммиты в GitHub",
+            "Запускать конкурентные задачи для ускорения"
+          ],
+          "rules": [
+            "Каждый модуль получает свою Task для параллельного выполнения",
+            "Ссылаться на SPARC документы, не придумывать код",
+            "Коммитить после каждой логической единицы: `feat(<feature-name>): <что>`",
+            "Запускать тесты параллельно с реализацией"
+          ],
+          "checkpoint": "Показать резюме реализации, спросить о переходе к ревью"
+        },
+        {
+          "phase": 4,
+          "name": "REVIEW (brutal-honesty-review, swarm)",
+          "goal": "Строгое пост-имплементационное ревью и улучшение",
+          "reviewers": [
+            {
+              "name": "code-quality",
+              "scope": "Исходный код",
+              "focus": "Clean code, паттерны, именование"
+            },
+            {
+              "name": "architecture",
+              "scope": "Интеграция",
+              "focus": "Консистентность с архитектурой проекта"
+            },
+            {
+              "name": "security",
+              "scope": "Security surface",
+              "focus": "Уязвимости, валидация входных данных"
+            },
+            {
+              "name": "performance",
+              "scope": "Hot paths",
+              "focus": "Узкие места, сложность"
+            },
+            {
+              "name": "testing",
+              "scope": "Покрытие тестами",
+              "focus": "Граничные случаи, недостающие тесты"
+            }
+          ],
+          "process": [
+            "Запустить brutal-honesty-review на реализации",
+            "Исправить выявленные проблемы (Task tool для параллельных исправлений)",
+            "Частые коммиты: `fix(<feature-name>): <что>`",
+            "Бенчмарк после реализации",
+            "Пере-ревью критических находок до чистого состояния"
+          ]
+        }
+      ],
+      "completion": "После всех 4 фаз: документация в docs/features/<feature-name>/, validation score, review report, commits count"
+    }
+  },
+  {
+    "id": "myinsights",
+    "title": "/myinsights",
+    "description": "Capture a development insight or manage existing insights",
+    "arguments": "brief title OR subcommand (archive INS-NNN, status INS-NNN [active|workaround|obsolete])",
+    "category": "knowledge",
+    "content": {
+      "overview": "Управление живой базой знаний проекта в папке `myinsights/`. Каждый insight хранится как отдельный файл для точной загрузки контекста.",
+      "subcommands": [
+        {
+          "command": "/myinsights [title]",
+          "description": "Захватить новый insight (по умолчанию)"
+        },
+        {
+          "command": "/myinsights archive INS-NNN",
+          "description": "Переместить insight в архив (устаревший)"
+        },
+        {
+          "command": "/myinsights status INS-NNN [active|workaround|obsolete]",
+          "description": "Изменить статус insight"
+        }
+      ],
+      "captureFlow": {
+        "step0": {
+          "name": "Обнаружение дубликатов",
+          "description": "ПЕРЕД созданием нового insight искать дубликаты в индексе",
+          "actions": [
+            "Прочитать `myinsights/1nsights.md`",
+            "Искать в колонке `Error Signatures` совпадающие строки ошибок",
+            "Искать в колонке `Summary` семантически похожие описания",
+            "Если найден возможный дубликат — предложить варианты: просмотреть и обновить, создать новый, отменить"
+          ]
+        },
+        "step1": {
+          "name": "Сбор информации",
+          "fields": [
+            {
+              "name": "Title",
+              "description": "Краткое описание проблемы/находки в одну строку"
+            },
+            {
+              "name": "Error Signatures",
+              "description": "Точные строки ошибок, коды или имена исключений для grep (например, ECONNREFUSED, P1001)"
+            },
+            {
+              "name": "Symptoms",
+              "description": "Что пошло не так? Какое было неожиданное поведение?"
+            },
+            {
+              "name": "Diagnostic Steps",
+              "description": "Какие шаги были предприняты для выявления первопричины?"
+            },
+            {
+              "name": "Root Cause",
+              "description": "Какова была фактическая базовая проблема?"
+            },
+            {
+              "name": "Solution",
+              "description": "Что исправило проблему? Пошаговое решение"
+            },
+            {
+              "name": "Prevention",
+              "description": "Как избежать этого в будущем? Защиты, тесты, проверки"
+            },
+            {
+              "name": "Tags",
+              "description": "Релевантные категории (docker, auth, ffmpeg, prisma, bullmq, llm-router)"
+            },
+            {
+              "name": "Related",
+              "description": "Ссылки на другие insights, документацию или issues"
+            }
+          ]
+        },
+        "step2": {
+          "name": "Создать файл деталей",
+          "format": "myinsights/INS-NNN-slug.md",
+          "structure": "Markdown файл со всеми собранными полями, статусом, severity, тегами"
+        },
+        "step3": {
+          "name": "Обновить индекс",
+          "file": "myinsights/1nsights.md",
+          "description": "Добавить строку в таблицу индекса с Error Signatures, Summary, Status, Hits"
+        },
+        "step4": {
+          "name": "Авто-нумерация",
+          "description": "Найти наивысший номер INS-NNN, инкрементировать на 1. Первый INS-001"
+        }
+      },
+      "hitCounter": "При использовании insight для решения проблемы — инкрементировать счётчик Hits в файле и индексе"
+    }
+  },
+  {
+    "id": "plan",
+    "title": "/plan",
+    "description": "Plan feature implementation from SPARC documentation",
+    "arguments": "feature name or user story ID",
+    "category": "planning",
+    "content": {
+      "overview": "Планирование реализации функции из документации SPARC. Разбивка функции на параллельные задачи с оценкой времени.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Найти user story в `docs/Specification.md`"
+        },
+        {
+          "step": 2,
+          "description": "Найти алгоритмы в `docs/Pseudocode.md`"
+        },
+        {
+          "step": 3,
+          "description": "Определить затронутые компоненты из `docs/Architecture.md`"
+        },
+        {
+          "step": 4,
+          "description": "Проверить граничные случаи в `docs/Refinement.md`"
+        },
+        {
+          "step": 5,
+          "description": "Проверить BDD сценарии в `docs/test-scenarios.md`"
+        },
+        {
+          "step": 6,
+          "description": "Вызвать `@planner` для разбиения на задачи"
+        },
+        {
+          "step": 7,
+          "description": "Определить, что можно выполнить параллельно (Task tool)"
+        },
+        {
+          "step": 8,
+          "description": "Показать план и запросить подтверждение"
+        }
+      ]
+    }
+  },
+  {
+    "id": "start",
+    "title": "/start",
+    "description": "Bootstrap entire КлипМейкер project from documentation",
+    "arguments": "optional flags --skip-tests, --skip-seed, --dry-run",
+    "category": "bootstrap",
+    "content": {
+      "overview": "Генерация всего проекта одной командой: из документации → рабочий monorepo с `docker compose up`.",
+      "prerequisites": [
+        "Документация в директории `docs/` (SPARC output)",
+        "CC toolkit в корне проекта (CLAUDE.md, .claude/, .mcp.json)",
+        "Node.js 20+, Docker + Docker Compose установлены",
+        "Git инициализирован"
+      ],
+      "phases": [
+        {
+          "phase": 1,
+          "name": "Foundation (последовательно)",
+          "description": "Всё зависит от этой фазы",
+          "tasks": [
+            "Прочитать всю документацию проекта для полного контекста",
+            "Если существует `myinsights/1nsights.md` — просканировать известные проблемы",
+            "Сгенерировать root конфиги: package.json с Turborepo workspaces",
+            "turbo.json, tsconfig.base.json, .eslintrc.js, .prettierrc",
+            "docker-compose.yml (web, 4 workers, postgres, redis)",
+            ".env.example из env переменных документации",
+            "Копировать .env.example → .env",
+            "Git commit: `chore: project root configuration`"
+          ]
+        },
+        {
+          "phase": 2,
+          "name": "Packages (параллельно через Task tool ⚡)",
+          "description": "4 параллельные задачи",
+          "tasks": [
+            {
+              "name": "Task A: packages/db",
+              "description": "Prisma schema из data model, client export, package.json",
+              "commit": "feat(db): Prisma schema from Specification data model"
+            },
+            {
+              "name": "Task B: packages/types + queue + config",
+              "description": "Shared types, BullMQ job types, env validation",
+              "commit": "feat(packages): shared types, queue definitions, config"
+            },
+            {
+              "name": "Task C: apps/web",
+              "description": "Next.js App Router, tRPC routers, components, auth, encrypted-storage",
+              "commit": "feat(web): Next.js app with tRPC routes and components"
+            },
+            {
+              "name": "Task D: apps/worker",
+              "description": "LLMRouter, BullMQ workers (STT, LLM, Video, Publish, Stats)",
+              "commit": "feat(worker): BullMQ workers with LLM Router"
+            }
+          ]
+        },
+        {
+          "phase": 3,
+          "name": "Integration (последовательно)",
+          "tasks": [
+            "Проверить кросс-пакетные импорты",
+            "Docker build: `docker compose build`",
+            "Запустить сервисы: `docker compose up -d postgres redis`",
+            "Настройка базы: prisma migrate dev --name init",
+            "Seed (если не --skip-seed)",
+            "Запустить app + workers: `docker compose up -d`",
+            "Health check: `curl -f http://localhost:3000/api/health`",
+            "Запустить тесты (если не --skip-tests)",
+            "Git commit: `chore: verify docker integration`"
+          ]
+        },
+        {
+          "phase": 4,
+          "name": "Finalize",
+          "tasks": [
+            "Сгенерировать/обновить README.md с quick start инструкциями",
+            "Final git tag: `git tag v0.1.0-scaffold`",
+            "Отчёт о резюме проекта"
+          ]
+        }
+      ],
+      "flags": [
+        {
+          "flag": "--skip-tests",
+          "description": "Пропустить typecheck/lint в Phase 4"
+        },
+        {
+          "flag": "--skip-seed",
+          "description": "Пропустить заполнение базы данных в Phase 3"
+        },
+        {
+          "flag": "--dry-run",
+          "description": "Показать план без выполнения"
+        }
+      ],
+      "errorRecovery": "Если задача падает на середине: все завершённые фазы закоммичены в git. Перезапустить /start — обнаружит существующие файлы и пропустит завершённые фазы"
+    }
+  },
+  {
+    "id": "test",
+    "title": "/test",
+    "description": "Generate and run tests from BDD scenarios",
+    "arguments": "scope (feature name, module, or \"all\")",
+    "category": "testing",
+    "content": {
+      "overview": "Генерация и запуск тестов из BDD сценариев с проверкой качества кода.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Найти Gherkin сценарии в `docs/test-scenarios.md` для [scope]"
+        },
+        {
+          "step": 2,
+          "description": "Найти граничные случаи в `docs/Refinement.md`"
+        },
+        {
+          "step": 3,
+          "description": "Конвертировать в Vitest/Playwright тесты"
+        },
+        {
+          "step": 4,
+          "description": "Запустить параллельно:",
+          "parallel": [
+            "`npm run test:unit` (Vitest)",
+            "`npm run test:integration` (Vitest + testcontainers)",
+            "`npm run lint` (ESLint)",
+            "`npm run typecheck` (tsc --noEmit)"
+          ]
+        },
+        {
+          "step": 5,
+          "description": "Показать результаты"
+        }
+      ],
+      "coverageTargets": [
+        {
+          "scope": "Core logic",
+          "target": "80%+"
+        },
+        {
+          "scope": "API routes",
+          "target": "70%+"
+        },
+        {
+          "scope": "UI",
+          "target": "50%+"
+        }
+      ]
+    }
+  }
+]
